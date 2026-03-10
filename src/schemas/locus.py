@@ -1,9 +1,8 @@
 from __future__ import annotations
-
 from enum import Enum
 from typing import List, Optional
+from pydantic import BaseModel, ConfigDict, Field
 
-from pydantic import BaseModel, ConfigDict
 
 class SideloadEnum(str, Enum):
     locusMembers = "locusMembers"
@@ -69,7 +68,7 @@ class LocusResponse(BaseModel):
 
 
 class LocusWithMembersResponse(LocusResponse):
-    locusMembers: List[LocusMemberResponse] = []
+    locusMembers: List[LocusMemberResponse] = Field(default_factory=list)
 
     @classmethod
     def from_orm_locus(cls, locus) -> "LocusWithMembersResponse":
