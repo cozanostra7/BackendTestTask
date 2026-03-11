@@ -19,6 +19,16 @@ pip install -r requirements.txt
 
 # 4. Create .env file in the root
 Populate the .env file with data provided in https://rnacentral.org/help/public-database
+Populate the .env file with:
+
+
+JWT_SECRET_KEY = "YOUR_SECRET_KEY" - the secret key can be skipped!!!
+
+
+JWT_ALGORITHM = "HS256"
+
+
+ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 
 # 5. Run the server
