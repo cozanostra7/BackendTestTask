@@ -1,6 +1,6 @@
 from __future__ import annotations
 from enum import Enum
-from typing import List, Optional
+from typing import List, Optional, Union
 from pydantic import BaseModel, ConfigDict, Field
 
 
@@ -20,68 +20,45 @@ class SortOrderEnum(str, Enum):
     asc = "asc"
     desc = "desc"
 
-
 class LocusMemberResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
-    locusMemberId: int
-    regionId: Optional[int]
-    locusId: int
-    membershipStatus: Optional[str]
-
-    @classmethod
-    def from_orm_member(cls, m) -> "LocusMemberResponse":
-        return cls(
-            locusMemberId=m.id,
-            regionId=m.region_id,
-            locusId=m.locus_id,
-            membershipStatus=m.membership_status,
-        )
+    locusMemberId: int = Field(alias="id")
+    regionId: Optional[int] = Field(default=None, alias="region_id")
+    locusId: int = Field(alias="locus_id")
+    membershipStatus: Optional[str] = Field(default=None, alias="membership_status")
 
 
 class LocusResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
-    assemblyId: str
-    locusName: str
-    publicLocusName: Optional[str]
-    chromosome: Optional[str]
-    strand: Optional[str]
-    locusStart: Optional[int]
-    locusStop: Optional[int]
-    memberCount: Optional[int]
-
-    @classmethod
-    def from_orm_locus(cls, locus) -> "LocusResponse":
-        return cls(
-            id=locus.id,
-            assemblyId=locus.assembly_id,
-            locusName=locus.locus_name,
-            publicLocusName=locus.public_locus_name,
-            chromosome=locus.chromosome,
-            strand=locus.strand,
-            locusStart=locus.locus_start,
-            locusStop=locus.locus_stop,
-            memberCount=locus.member_count,
-        )
+    assemblyId: str = Field(alias="assembly_id")
+    locusName: str = Field(alias="locus_name")
+    publicLocusName: Optional[str] = Field(default=None, alias="public_locus_name")
+    chromosome: Optional[str] = None
+    strand: Optional[str] = None
+    locusStart: Optional[int] = Field(default=None, alias="locus_start")
+    locusStop: Optional[int] = Field(default=None, alias="locus_stop")
+    memberCount: Optional[int] = Field(default=None, alias="member_count")
 
 
 class LocusWithMembersResponse(LocusResponse):
     locusMembers: List[LocusMemberResponse] = Field(default_factory=list)
 
     @classmethod
-    def from_orm_locus(cls, locus) -> "LocusWithMembersResponse":
-        base = super().from_orm_locus(locus)
+    def from_locus(cls, locus):
+        base = LocusResponse.model_validate(locus)
+
         members = [
-            LocusMemberResponse.from_orm_member(m)
+            LocusMemberResponse.model_validate(m)
             for m in (locus.locus_members or [])
         ]
-        return cls(**base.model_dump(), locusMembers=members)
 
+        return cls(**base.model_dump(), locusMembers=members)
 
 class PaginatedResponse(BaseModel):
     total: int
     page: int
     pageSize: int
-    results: List[LocusResponse | LocusWithMembersResponse]
+    results: List[Union[LocusResponse, LocusWithMembersResponse]]
