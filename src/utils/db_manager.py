@@ -1,6 +1,6 @@
 from src.repositories.locus import LocusRepository
 
-class DBManager:
+class DataBaseManager:
 
     def __init__(self,session_factory):
         self.session_factory = session_factory
